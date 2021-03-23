@@ -1,3 +1,7 @@
+/* 
+ * 这是一个非常简单的ESP32项目
+ * 功能：查询上海的天气情况
+ */
 #include <Arduino.h>
 #include "WiFi.h"
 #include "HTTPClient.h"

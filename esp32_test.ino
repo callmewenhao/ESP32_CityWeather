@@ -2,13 +2,11 @@
  * 这是一个非常简单的ESP32项目
  * 功能：查询上海的天气情况
  */
-
-
-
-#include <Arduino.h>
 #include "WiFi.h"
 #include "HTTPClient.h"
 #include "ArduinoJson.h"
+#include "SSD1306.h"
+#include "Wire.h"
 
 const char *ssid = "17D3012";                      //wifi名
 const char *password = "515522321";              //wifi密码
@@ -18,16 +16,24 @@ const char *city = "shanghai";                     //查询的城市
 
 String req;
 String rsp;
-HTTPClient http_client;
 String city_name;
 String city_weather;
 String city_temperature;
 
+HTTPClient http_client;
 //
 StaticJsonDocument<512> doc;
 
+SSD1306 oled(0x3c, 26, 25);
+
 void setup()
 {
+  //OLED
+  oled.init();
+  oled.setFont(ArialMT_Plain_16);
+  // oled.drawString(0, 0, "shanghai!");
+  oled.display();
+  oled.clear();
   
   //串口
   Serial.begin(115200);
@@ -45,12 +51,12 @@ void setup()
   Serial.println("OK");
   Serial.println("Wifi connected");
   
-  //HTTPClint
+  //HTTPClint https://api.seniverse.com/v3/weather/now.json?key=S5Z6TKOCrnZtNe7gr&location=shanghai&language=en&unit=c
   req = (String)host + "/v3/weather/now.json?key=";
   req += apiKey;
   req += "&location=";
   req += city;
-  req += "&language=zh-Hans&unit=c";
+  req += "&language=en&unit=c";
   Serial.println(req);
   if (http_client.begin(req))
   {
@@ -85,14 +91,19 @@ void loop()
 //      const char* results_0_location_timezone_offset = results_0_location["timezone_offset"]; // "+08:00"
 //      
       JsonObject results_0_now = results_0["now"];
-      const char* results_0_now_text = results_0_now["text"]; // "阴"
+      const char* results_0_now_text = results_0_now["text"];
 //      const char* results_0_now_code = results_0_now["code"]; // "9"
-      const char* results_0_now_temperature = results_0_now["temperature"]; // "16"
+      const char* results_0_now_temperature = results_0_now["temperature"];
 
-      Serial.println(results_0_location_name);
-      Serial.println(results_0_now_text);
-      Serial.println(results_0_now_temperature);
-      //Serial.println(city_temperature.c_str());
+      oled.drawString(0, 0, results_0_location_name);
+      oled.drawString(0, 16, results_0_now_text);
+      oled.drawString(50, 16, results_0_now_temperature);
+      oled.drawString(70, 16, "°C");
+      oled.display();
+
+      // Serial.println(results_0_location_name);
+      // Serial.println(results_0_now_text);
+      // Serial.println(results_0_now_temperature);
     }
     else
     {
